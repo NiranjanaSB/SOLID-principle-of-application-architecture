@@ -1,0 +1,246 @@
+Solid principle application architecture:
+
+S: Single Responsibility Principle (SRP)
+O: Open closed Principle (OSP)
+L: Liskov substitution Principle (LSP)
+I: Interface Segregation Principle (ISP)
+D: Dependency Inversion Principle (DIP)
+
+
+Single Responsibility Principle (SRP):
+"Every software module should have only one reason to change".
+The Single Responsibility Principle gives us a good way of identifying classes at the design phase of an application and it makes you think of all the ways a class can change. A good separation of responsibilities is done only when we have the full picture of how the application should work.
+Example:
+public class UserService  
+{  
+   public void Register(string email, string password)  
+   {  
+      if (!ValidateEmail(email))  
+         throw new ValidationException("Email is not an email");  
+         var user = new User(email, password);  
+  
+         SendEmail(new MailMessage("mysite@nowhere.com", email) { Subject="Hello" });  
+   }
+   public virtual bool ValidateEmail(string email)  
+   {  
+     return email.Contains("@");  
+   }  
+   public bool SendEmail(MailMessage message)  
+   {  
+     _smtpClient.Send(message);  
+   }  
+
+
+Open closed Principle (OSP):
+"A software module is open for extension and closed for modification".
+Here "Open for extension" means, we need to design our module in such a way that the new functionality can be added only when new requirements are generated. "Closed for modification" means we have already developed a class and it has gone through unit testing. We should then not alter it until we find bugs.
+
+Example:Rectangle class
+
+public class Rectangle{  
+   public double Height {get;set;}  
+   public double Wight {get;set; }  
+} 
+
+Area of the calculator
+
+public class AreaCalculator {  
+   public double TotalArea(Rectangle[] arrRectangles)  
+   {  
+      double area;  
+      foreach(var objRectangle in arrRectangles)  
+      {  
+         area += objRectangle.Height * objRectangle.Width;  
+      }  
+      return area;  
+   }  
+}   
+
+Area of the circle in the same app
+
+public class Rectangle{  
+   public double Height {get;set;}  
+   public double Wight {get;set; }  
+}  
+public class Circle{  
+   public double Radius {get;set;}  
+}  
+public class AreaCalculator  
+{  
+   public double TotalArea(object[] arrObjects)  
+   {  
+      double area = 0;  
+      Rectangle objRectangle;  
+      Circle objCircle;  
+      foreach(var obj in arrObjects)  
+      {  
+         if(obj is Rectangle)  
+         {    
+            area += obj.Height * obj.Width;  
+         }  
+         else  
+         {  
+            objCircle = (Circle)obj;  
+            area += objCircle.Radius * objCircle.Radius * Math.PI;  
+         }  
+      }  
+      return area;  
+   }  
+}   
+
+
+
+
+
+
+3. Liskov Substitution Principle:
+The Liskov Substitution Principle (LSP) states that "you should be able to use any derived class instead of a parent class and have it behave in the same manner without modification". It ensures that a derived class does not affect the behavior of the parent class, in other words that a derived class must be substitutable for its base class.
+
+Managing data only SQL file texts
+
+public class SqlFile  
+{  
+   public string FilePath {get;set;}  
+   public string FileText {get;set;}  
+   public string LoadText()  
+   {  
+       
+   }  
+   public string SaveText()  
+   {  
+       
+   }  
+}  
+public class SqlFileManager  
+{  
+   public List<SqlFile> lstSqlFiles {get;set}  
+  
+   public string GetTextFromFiles()  
+   {  
+      StringBuilder objStrBuilder = new StringBuilder();  
+      foreach(var objFile in lstSqlFiles)  
+      {  
+         objStrBuilder.Append(objFile.LoadText());  
+      }  
+      return objStrBuilder.ToString();  
+   }  
+   public void SaveTextIntoFiles()  
+   {  
+      foreach(var objFile in lstSqlFiles)  
+      {  
+         objFile.SaveText();  
+      }  
+   }  
+}   
+Create "ReadOnlySqlFile" class that inherits the "SqlFile" class and we need to alter the SaveTextIntoFiles() method by introducing a condition to prevent calling the SaveText() method on ReadOnlySqlFile instances.
+public class SqlFile  
+{  
+   public string LoadText()  
+   {  
+   /* Code to read text from sql file */  
+   }  
+   public void SaveText()  
+   {  
+      /* Code to save text into sql file */  
+   }  
+}  
+public class ReadOnlySqlFile: SqlFile  
+{  
+   public string FilePath {get;set;}  
+   public string FileText {get;set;}  
+   public string LoadText()  
+   {  
+      /* Code to read text from sql file */  
+   }  
+   public void SaveText()  
+   {  
+      /* Throw an exception when app flow tries to do save. */  
+      throw new IOException("Can't Save");  
+   }  
+}   
+
+
+
+
+
+
+4.Interface Segregation Principle (ISP):
+The Interface Segregation Principle states "that clients should not be forced to implement interfaces they don't use. Instead of one fat interface many small interfaces are preferred based on groups of methods, each one serving one sub module.".
+
+Example:
+create an interface and a TeamLead class.
+public Interface ILead  
+{  
+   void CreateSubTask();  
+   void AssginTask();  
+   void WorkOnTask();  
+}  
+public class TeamLead : ILead  
+{  
+   public void AssignTask()  
+   {  
+      //Code to assign a task.  
+   }  
+   public void CreateSubTask()  
+   {  
+      //Code to create a sub task  
+   }  
+   public void WorkOnTask()  
+   {  
+      //Code to implement perform assigned task.  
+   }  
+}  
+
+Manager assign the task to team leader
+
+
+public class Manager: ILead  
+{  
+   public void AssignTask()  
+   {  
+      //Code to assign a task.  
+   }  
+   public void CreateSubTask()  
+   {  
+      //Code to create a sub task.  
+   }  
+   public void WorkOnTask()  
+   {  
+      throw new Exception("Manager can't work on Task");  
+   }  
+}   
+
+"Breaking down” interface described behaviors allows us to improve our codes readability, testability, and maintainability.
+
+
+
+
+5.Dependency Inversion Principle:
+The Dependency Inversion Principle (DIP) states that high-level modules/classes should not depend on low-level modules/classes. Both should depend upon abstractions. Secondly, abstractions should not depend upon details. Details should depend upon abstractions.
+
+Example:
+internal interface IGear
+{
+}
+
+internal class Gear : IGear
+{
+}
+
+internal interface IEngine
+{
+}
+
+internal class Engine : IEngine
+{
+    IGear gear;
+}
+
+class Car
+{
+    IEngine engine;
+}
+By extracting the “contract” between each of the dependent entities, we’ve decoupled each entity from its former dependencies. A contract is now being shared between each entity and its dependency.
+
+
+
